@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>자산관리 연동 키 발급 가이드</title>
+<style>
+  :root { --bg:#F4F1EA; --card:#FFFDF8; --ink:#1F1D1A; --sub:#615B52; --line:rgba(70,50,30,.12); --accent:#C15F3C; --warn:#9A5B00; --warn-bg:rgba(220,150,40,.12); }
+  @media (prefers-color-scheme: dark) { :root { --bg:#1B1916; --card:#252320; --ink:#F2EDE4; --sub:#B4ADA2; --line:rgba(255,240,220,.12); --accent:#DA7756; --warn:#F0B35A; --warn-bg:rgba(240,180,90,.12); } }
+  body { margin:0; background:var(--bg); color:var(--ink); font:16px/1.7 -apple-system, "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif; word-break:keep-all; overflow-wrap:break-word; }
+  main { max-width:720px; margin:0 auto; padding:36px max(20px, env(safe-area-inset-right)) 80px max(20px, env(safe-area-inset-left)); }
+  h1 { font-size:25px; margin:0 0 6px; line-height:1.35; }
+  h2 { font-size:19px; margin:0; line-height:1.4; }
+  p, li { color:var(--sub); }
+  p { margin:0 0 10px; }
+  strong { color:var(--ink); }
+  .lead { margin-bottom:22px; }
+  nav { display:flex; flex-wrap:wrap; gap:8px; margin:0 0 28px; }
+  nav a { padding:7px 13px; border-radius:999px; background:var(--card); border:1px solid var(--line); color:var(--ink); text-decoration:none; font-size:14px; font-weight:600; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:16px; padding:20px 22px; margin-top:16px; scroll-margin-top:16px; }
+  .card:target { border-color:var(--accent); box-shadow:0 0 0 2px color-mix(in srgb, var(--accent) 30%, transparent); }
+  .hd { display:flex; align-items:baseline; justify-content:space-between; gap:10px; flex-wrap:wrap; margin-bottom:12px; }
+  .site { font-size:14px; color:var(--accent); text-decoration:none; font-weight:600; }
+  ol { margin:0; padding-left:22px; }
+  ol li { color:var(--ink); padding-left:2px; }
+  ol li + li { margin-top:8px; }
+  ul { margin:0; padding-left:20px; }
+  li + li { margin-top:6px; }
+  .tag { display:inline-block; font-size:12px; font-weight:700; padding:1px 8px; border-radius:6px; background:var(--warn-bg); color:var(--warn); vertical-align:2px; margin-left:4px; }
+  .note { margin-top:14px; padding:12px 14px; border-radius:12px; background:var(--warn-bg); color:var(--ink); font-size:15px; }
+  .k { display:inline-block; padding:0 7px; border-radius:6px; border:1px solid var(--line); background:var(--bg); color:var(--ink); font-weight:600; font-size:14.5px; }
+  .sec { font-size:13px; font-weight:700; letter-spacing:.04em; color:var(--sub); margin:34px 0 0; }
+  footer { margin-top:40px; font-size:14px; color:var(--sub); }
+</style>
+</head>
+<body>
+<main>
+  <h1>연동 키 발급 가이드</h1>
+  <p class="lead">거래소·증권사 잔고를 자산관리에 자동으로 불러오려면, 각 회사 사이트에서 <strong>조회용 API 키</strong>를 직접 만들어 앱에 붙여 넣어야 해요. 기관을 골라 순서대로 따라 하세요.</p>
+
+  <nav>
+    <a href="#upbit">업비트</a><a href="#bithumb">빗썸</a><a href="#binance">바이낸스</a>
+    <a href="#hantu">한국투자증권</a><a href="#kiwoom">키움증권</a><a href="#lssec">LS증권</a>
+  </nav>
+
+  <div class="card">
+    <h2>시작하기 전에</h2>
+    <ul style="margin-top:10px">
+      <li><strong>조회 권한만</strong> 켜 주세요. 주문·출금·이체 권한은 필요 없어요. 앱은 잔고를 읽기만 해요.</li>
+      <li>키는 <strong>이 폰에만 암호화해서</strong> 저장돼요. 백업 파일이나 Google 드라이브에도 올라가지 않아요.</li>
+      <li><strong>Secret Key(시크릿키)는 발급 화면에서 한 번만</strong> 보여 주는 곳이 많아요. 바로 복사해 앱에 붙여 넣으세요. 놓쳤다면 키를 지우고 새로 만들면 돼요.</li>
+      <li><strong>허용 IP</strong>를 꼭 넣어야 하는 곳(업비트·빗썸·키움)은 앱 연동 화면의 <span class="k">지금 이 폰의 IP 확인</span> 버튼으로 IP를 복사해 넣으세요. <strong>집 와이파이</strong>에 연결된 상태에서 확인해야 해요. 휴대폰 데이터 IP는 자주 바뀌어요.</li>
+    </ul>
+  </div>
+
+  <div class="sec">가상자산 거래소</div>
+
+  <section class="card" id="upbit">
+    <div class="hd"><h2>업비트 <span class="tag">IP 등록 필수</span></h2><a class="site" href="https://upbit.com">upbit.com ↗</a></div>
+    <ol>
+      <li>휴대폰이나 PC 브라우저로 <strong>upbit.com</strong>에 로그인해요. (업비트 앱에는 키 발급 메뉴가 없어요)</li>
+      <li><span class="k">마이페이지</span> → <span class="k">Open API 관리</span>로 들어가요.</li>
+      <li>권한은 <strong>자산조회</strong>만 체크해요.</li>
+      <li><strong>특정 IP에서만 실행</strong>에 자산관리 앱에서 복사한 IP를 넣어요.</li>
+      <li>약관에 동의하고 <span class="k">Open API Key 발급받기</span> → 카카오페이·네이버 등으로 인증해요.</li>
+      <li>나온 <strong>Access Key</strong>와 <strong>Secret Key</strong>를 앱에 붙여 넣어요.</li>
+    </ol>
+    <div class="note">업비트 키는 발급 후 1년이 지나면 만료돼요. 만료되면 같은 방법으로 새 키를 만들어 앱의 <span class="k">연결 관리 → 다시 인증</span>에 넣어 주세요.</div>
+  </section>
+
+  <section class="card" id="bithumb">
+    <div class="hd"><h2>빗썸 <span class="tag">IP 등록 필수</span></h2><a class="site" href="https://www.bithumb.com">bithumb.com ↗</a></div>
+    <ol>
+      <li>브라우저로 <strong>bithumb.com</strong>에 로그인해요.</li>
+      <li><span class="k">마이페이지</span> → <span class="k">API 관리</span>로 들어가요.</li>
+      <li>API 키 생성에서 권한은 <strong>자산조회</strong>만 켜요.</li>
+      <li>허용 IP에 자산관리 앱에서 복사한 IP를 넣어요.</li>
+      <li>보안 인증을 마치면 나오는 <strong>Access Key</strong>(Connect Key)와 <strong>Secret Key</strong>를 앱에 붙여 넣어요.</li>
+    </ol>
+  </section>
+
+  <section class="card" id="binance">
+    <div class="hd"><h2>바이낸스</h2><a class="site" href="https://www.binance.com/ko/my/settings/api-management">API 관리 ↗</a></div>
+    <ol>
+      <li>바이낸스에 로그인하고 <span class="k">프로필</span> → <span class="k">API 관리</span>로 들어가요.</li>
+      <li><span class="k">API 생성</span> → <strong>시스템 생성</strong>을 고르고 이름(예: 자산관리)을 정해요.</li>
+      <li>보안 인증을 마치면 키가 만들어져요. 권한은 기본값인 <strong>읽기 허용(Enable Reading)</strong>만 둬요.</li>
+      <li><strong>API Key</strong>와 <strong>Secret Key</strong>를 앱의 Access Key·Secret Key 칸에 붙여 넣어요.</li>
+    </ol>
+    <div class="note">바이낸스는 IP 제한이 없어도 조회 키를 쓸 수 있어요. 더 안전하게 쓰고 싶다면 IP 제한을 켜고 집 와이파이 IP를 넣어도 돼요.</div>
+  </section>
+
+  <section class="card">
+    <h2>IP 등록이 번거롭다면</h2>
+    <p style="margin-top:8px">키 없이도 코인을 관리할 수 있어요. 자산 추가에서 거래소를 고르고 <strong>보유 수량</strong>만 넣으면, 시세는 앱이 받아와 금액을 자동으로 계산해요. 연동 화면의 <span class="k">키 없이 수량으로 입력하기</span>를 눌러도 돼요.</p>
+  </section>
+
+  <div class="sec">증권사</div>
+
+  <section class="card" id="hantu">
+    <div class="hd"><h2>한국투자증권</h2><a class="site" href="https://apiportal.koreainvestment.com">KIS Developers ↗</a></div>
+    <ol>
+      <li>한국투자 앱이나 홈페이지에서 <strong>KIS Developers 서비스 신청</strong>을 해요. (홈페이지: <span class="k">트레이딩 → Open API</span>)</li>
+      <li>연동할 <strong>계좌</strong>를 고르고 약관에 동의해요. 계좌 하나에 키 하나가 나와요.</li>
+      <li><strong>apiportal.koreainvestment.com</strong>에 로그인하면 <strong>앱키(App Key)</strong>와 <strong>앱시크릿(App Secret)</strong>을 볼 수 있어요.</li>
+      <li>앱에 앱키·앱시크릿과 <strong>계좌번호 10자리</strong>(종합계좌 8자리 + 상품코드 2자리, 예: 12345678-01)를 넣어요.</li>
+    </ol>
+    <div class="note">모의투자 키가 아니라 <strong>실전투자</strong> 키를 넣어 주세요. 계좌가 여러 개면 계좌마다 따로 신청하고 따로 연결해요.</div>
+  </section>
+
+  <section class="card" id="kiwoom">
+    <div class="hd"><h2>키움증권 <span class="tag">IP 등록 필수</span></h2><a class="site" href="https://openapi.kiwoom.com">키움 REST API ↗</a></div>
+    <ol>
+      <li><strong>openapi.kiwoom.com</strong>에 키움 아이디로 로그인해요.</li>
+      <li><span class="k">API 사용신청</span>에서 연동할 계좌를 고르고 신청해요.</li>
+      <li>허용 IP에 자산관리 앱에서 복사한 IP를 등록해요.</li>
+      <li><span class="k">앱키 관리</span>에서 <strong>앱키(App Key)</strong>와 <strong>시크릿키(Secret Key)</strong>를 복사해 앱에 붙여 넣어요.</li>
+    </ol>
+    <div class="note">예전 방식인 ‘영웅문 OpenAPI(OCX)’가 아니라 <strong>REST API</strong> 키여야 해요.</div>
+  </section>
+
+  <section class="card" id="lssec">
+    <div class="hd"><h2>LS증권</h2><a class="site" href="https://openapi.ls-sec.co.kr">LS증권 OPEN API ↗</a></div>
+    <ol>
+      <li><strong>openapi.ls-sec.co.kr</strong>에 LS증권 아이디로 로그인해요.</li>
+      <li><span class="k">API 신청</span>에서 연동할 계좌를 고르고 신청해요.</li>
+      <li>발급된 <strong>앱키(App Key)</strong>와 <strong>시크릿키(Secret Key)</strong>를 복사해 앱에 붙여 넣어요.</li>
+    </ol>
+  </section>
+
+  <footer>
+    각 회사 사이트의 메뉴 이름은 바뀔 수 있어요. 막히는 곳이 있으면 앱의 <strong>설정 → 의견 보내기</strong>로 알려 주세요.<br>
+    <a href="./" style="color:var(--accent)">개인정보처리방침</a>
+  </footer>
+</main>
+</body>
+</html>
